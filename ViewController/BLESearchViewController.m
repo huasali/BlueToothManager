@@ -31,9 +31,16 @@
     [_LANWork startScanGNDevice:^(NSDictionary * _Nonnull object) {
         NSString *identifier = object[@"identifier"];
         NSString *title = [NSString stringWithFormat:@"%@(%@)",identifier,object[@"rssi"]];
-        NSString *message = object[@"data"];
-        if (!self->_deviceDic[identifier]) {
-            [self->_deviceDic setValue:@{@"title":title,@"message":message,@"rssi":object[@"rssi"]} forKey:identifier];
+        NSString *data = object[@"data"];
+        if (self->_deviceDic[identifier]) {
+            NSString *message = self->_deviceDic[identifier][@"message"];
+            if (![message containsString:data]) {
+                [self->_deviceDic setValue:@{@"title":title,@"message":[NSString stringWithFormat:@"%@\ndata(%ld):%@",message,data.length/2,data],@"rssi":object[@"rssi"]} forKey:identifier];
+                [self reloadTableView];
+            }
+        }
+        else{
+            [self->_deviceDic setValue:@{@"title":title,@"message":[NSString stringWithFormat:@"data(%ld):%@",data.length/2,data],@"rssi":object[@"rssi"]} forKey:identifier];
             [self reloadTableView];
         }
     }];
